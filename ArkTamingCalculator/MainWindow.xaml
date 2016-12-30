@@ -6,7 +6,7 @@
         xmlns:xceed="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
         xmlns:local="clr-namespace:ArkTamingCalculator"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="400" Width="525">
     <Grid Name="grid" Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -16,17 +16,18 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
-            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="33"/>
+            <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="50"/>
             <ColumnDefinition Width="75"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.ColumnSpan="4" Grid.Row="0">
+        <Grid Grid.ColumnSpan="5" Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="150"/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -36,22 +37,22 @@
             <Label Name="lbTamingMult" Grid.Column="2" Grid.Row="0">Taming mult.</Label>
             <Label Name="lbFoodMult" Grid.Column="3" Grid.Row="0">Food mult.</Label>
             <ComboBox Name="cbDinoChooser" SelectionChanged="cbDinoChooser_SelectionChanged" Grid.Column="0" Grid.Row="1"/>
-            <xceed:IntegerUpDown Name="iudLevel" Grid.Column="1" Grid.Row="1" Margin="10,1,0,1" Value="1"/>
+            <xceed:IntegerUpDown Name="iudLevel" Grid.Column="1" Grid.Row="1" Margin="10,1,0,1" DefaultValue="1" Value="1"/>
             <xceed:IntegerUpDown Name="iudTamingMultiplier" Grid.Column="2" Grid.Row="1" Margin="10,1,0,1" Value="1"/>
             <xceed:IntegerUpDown Name="iudFoodRateMultiplier" Grid.Column="3" Grid.Row="1"  Margin="10,1,0,1" Value="1"/>
         </Grid>
         <Label Name="lbFood" Grid.Column="0" Grid.Row="1">Food</Label>
-        <Label Name="lbQty" Grid.Column="1" Grid.Row="1">Qty</Label>
-        <Label Name="lbMax" Grid.Column="2" Grid.Row="1">Max</Label>
-        <Label Name="lbTime" Grid.Column="3" Grid.Row="1">Time</Label>
+        <Label Name="lbQty" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2">Qty</Label>
+        <Label Name="lbMax" Grid.Column="3" Grid.Row="1">Max</Label>
+        <Label Name="lbTime" Grid.Column="4" Grid.Row="1">Time</Label>
         <ItemsControl Name="FoodLabel" Grid.Row="2" Grid.Column="0">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding}"/>
+                    <Label Content="{Binding Path=Name}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <ItemsControl Name="FoodUpDown" Grid.Row="2" Grid.Column="1">
+        <ItemsControl Name="FoodUpDown" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <ItemsControl>
@@ -60,21 +61,21 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <ItemsControl Name="MaxLabel" Grid.Row="2" Grid.Column="2">
+        <ItemsControl Name="MaxLabel" Grid.Row="2" Grid.Column="3">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Label Content="{Binding}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <ItemsControl Name="TimeLabel" Grid.Row="2" Grid.Column="3">
+        <ItemsControl Name="TimeLabel" Grid.Row="2" Grid.Column="4">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Label Content="{Binding}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Grid Grid.Row="3" Grid.ColumnSpan="4">
+        <Grid Grid.Row="3" Grid.ColumnSpan="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>

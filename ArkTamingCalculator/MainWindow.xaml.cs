@@ -15,10 +15,7 @@ namespace ArkTamingCalculator
     public partial class MainWindow : Window
     {
         static Dictionary<string, Dinosaur> Dinosaurs = new Dictionary<string, Dinosaur>();
-        static Dictionary<string, FoodAffinityMapping> FoodAffinityMappings = new Dictionary<string, FoodAffinityMapping>();
-        static Dictionary<string, List<string>> FoodMapping = new Dictionary<string, List<string>>();
-        //static Dictionary<string, Tuple<int, int>> FoodAffinityMapping = new Dictionary<string,Tuple<int, int>>();
-        static List<string> mapping;
+        static Dictionary<string, Food> Food = new Dictionary<string, Food>();
 
         // Adjust affinity gain per food
         static double TamingMultiplier = 1;
@@ -26,11 +23,12 @@ namespace ArkTamingCalculator
         // Adjust how fast food drains
         static double FoodRateMultiplier = 1;
 
-        public double FoodValueOfSuppliedFood;
-        public double TargetFood { get; set; }
-        public double CurrentFood { get; set; }
-        public double MaxFood { get; set; }
-        public int Level;
+        static int Level = 1;
+
+        double FoodValueOfSuppliedFood;
+        double TargetFood { get; set; }
+        double CurrentFood { get; set; }
+        double MaxFood { get; set; }
 
         public MainWindow()
         {
@@ -40,18 +38,12 @@ namespace ArkTamingCalculator
             iudFoodRateMultiplier.ValueChanged += iudFoodRateMultiplier_ValueChanged;
             iudLevel.ValueChanged += iudLevel_ValueChanged;
 
-            // Type of food, list of relevant food
-            FoodMapping.Add("Carnivore", new List<string>() { "Kibble", "Raw Prime Meat", "Raw Prime Fish Meat", "Cooked Prime Meat", "Raw Meat", "Raw Fish Meat", "Cooked Meat" });
-            FoodMapping.Add("Herbivore", new List<string>() { "Kibble", "Mejoberries", "Vegetables", "Other berries" });
-
             LoadData();
 
             cbDinoChooser.ItemsSource = Dinosaurs.Keys;
-            // Name, level
-            //DoCalculate();
         }
 
-        public void DoCalculate()
+        private void DoCalculate()
         {
             string dinoName = cbDinoChooser.SelectedValue.ToString();
             if (Dinosaurs.ContainsKey(dinoName))
@@ -60,39 +52,41 @@ namespace ArkTamingCalculator
                 double affinityTotal = dino.AffinityBase + dino.AffinityPerLevel * Level;
 
 
-                mapping = FoodMapping[dino.FoodType];
-                FoodLabel.ItemsSource = mapping;
-                FoodUpDown.ItemsSource = mapping;
+
+                FoodLabel.ItemsSource = dino.Food;
+                FoodUpDown.ItemsSource = dino.Food;
 
                 List<double> listMaxFoodItemsNeeded = new List<double>();
                 List<string> durations = new List<string>();
+
                 double foodAmountNeeded = 0;
-                foreach (string food in FoodMapping[dino.FoodType])
+
+                foreach (Food food in dino.Food)
                 {
-                    double affinityPerFood = FoodAffinityMappings[food].Affinity * TamingMultiplier;
+                    double affinityPerFood = food.Affinity * TamingMultiplier;
                     double maxFoodItemsNeeded = Math.Ceiling(affinityTotal / affinityPerFood);
                     listMaxFoodItemsNeeded.Add(maxFoodItemsNeeded);
 
-                    foodAmountNeeded = maxFoodItemsNeeded * FoodAffinityMappings[food].FoodValue;
+                    foodAmountNeeded = maxFoodItemsNeeded * food.FoodValue;
                     double timeInSeconds = dino.FoodRate / FoodRateMultiplier * foodAmountNeeded * 10;
                     TimeSpan duration = TimeSpan.FromSeconds(timeInSeconds);
                     string time = duration.ToString(@"hh\:mm\:ss");
                     durations.Add(time);
-
                 }
+
                 MaxLabel.ItemsSource = listMaxFoodItemsNeeded;
                 TimeLabel.ItemsSource = durations;
                 FoodValueOfSuppliedFood = foodAmountNeeded;
             }
         }
 
-        public void LoadData()
+        private void LoadData()
         {
+            LoadFood();
             LoadDinosaurs();
-            LoadFoodAffinityMapping();
         }
 
-        public void LoadDinosaurs()
+        private void LoadDinosaurs()
         {
             string[] allDinosaurInfo = File.ReadAllLines("DinosaurValues.csv");
             foreach (string dinosaurInfo in allDinosaurInfo)
@@ -100,16 +94,25 @@ namespace ArkTamingCalculator
                 string[] dinosaur = dinosaurInfo.Split(',');
 
                 string Name = dinosaur[0];
-                string FoodType = dinosaur[1];
-                double AffinityBase = Double.Parse(dinosaur[2]);
-                double AffinityPerLevel = Double.Parse(dinosaur[3]);
-                double FoodRate = Double.Parse(dinosaur[4], CultureInfo.InvariantCulture);
-                Dinosaur dino = new Dinosaur(Name, FoodType, AffinityBase, AffinityPerLevel, FoodRate);
+                //string FoodType = dinosaur[1];
+                double AffinityBase = Double.Parse(dinosaur[1]);
+                double AffinityPerLevel = Double.Parse(dinosaur[2]);
+                double FoodRate = Double.Parse(dinosaur[3], CultureInfo.InvariantCulture);
+                List<Food> FoodList = new List<Food>();
+                foreach (string foodInfo in dinosaur)
+                {
+                    if (Food.ContainsKey(foodInfo))
+                    {
+                        FoodList.Add(Food[foodInfo]);
+                    }          
+                }
+
+                Dinosaur dino = new Dinosaur(Name, AffinityBase, AffinityPerLevel, FoodRate, FoodList);
                 Dinosaurs.Add(Name, dino);
             }
         }
 
-        public void LoadFoodAffinityMapping()
+        private void LoadFood()
         {
             string[] allFoodAffinityInfo = File.ReadAllLines("FoodAffinityMapping.csv");
             foreach (string foodAffinityInfo in allFoodAffinityInfo)
@@ -119,8 +122,8 @@ namespace ArkTamingCalculator
                 string FoodName = foodAffinityMapping[0];
                 double Affinity = double.Parse(foodAffinityMapping[1]);
                 double FoodValue = double.Parse(foodAffinityMapping[2]);
-                FoodAffinityMapping FoodAffinityMapping = new FoodAffinityMapping(FoodName, Affinity, FoodValue);
-                FoodAffinityMappings.Add(FoodName, FoodAffinityMapping);
+                Food FoodAffinityMapping = new Food(FoodName, Affinity, FoodValue);
+                Food.Add(FoodName, FoodAffinityMapping);
             }
         }
 
@@ -139,19 +142,36 @@ namespace ArkTamingCalculator
 
         private void iudTamingMultiplier_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            TamingMultiplier = double.Parse(e.NewValue.ToString());
+            double newValue = double.Parse(e.NewValue.ToString());
+            if (newValue == 0){
+                newValue = 1;
+            }
+            TamingMultiplier = newValue;
+
             DoCalculate();
         }
 
         private void iudFoodRateMultiplier_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            FoodRateMultiplier = double.Parse(e.NewValue.ToString());
+            double newValue = double.Parse(e.NewValue.ToString());
+            if (newValue == 0)
+            {
+                newValue = 1;
+            }
+            FoodRateMultiplier = newValue;
+
             DoCalculate();
         }
 
         private void iudLevel_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            Level = int.Parse(e.NewValue.ToString());
+            int newValue = int.Parse(e.NewValue.ToString());
+            if (newValue == 0)
+            {
+                newValue = 1;
+            }
+            Level = newValue;
+
             DoCalculate();
         }
 
